@@ -1,39 +1,33 @@
 import React, { useEffect, useState } from 'react';
 
-interface useMediaQueryProps {
-  query: string;
+interface UseMediaQueryProps {
+  query: string | null;
 }
 
-function useWindowSize(): number[] {
-  const [size, setSize] = useState([0, 0]);
-
-  useEffect(() => {
-    function updateSize() {
-      setSize([window.innerWidth, window.innerHeight]);
+function useMediaQuery(queryObject: UseMediaQueryProps) {
+  const [isQueryMatching, setIsQueryMatching] = useState(() => {
+    if (queryObject.query !== null) {
+      return window.matchMedia(queryObject.query).matches;
     }
-    window.addEventListener('resize', updateSize);
-    updateSize();
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
-
-  return size;
-}
-
-function useMediaQuery(queryObject: useMediaQueryProps) {
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  let size = useWindowSize();
+    return false;
+  });
 
   useEffect(() => {
-    let isMatches = window.matchMedia(queryObject.query);
-    setIsVisible(() => {
-      return isMatches.matches;
-    });
-  }, [queryObject.query, size]);
+    if (queryObject.query !== null) {
+      const tempQueryList = window.matchMedia(queryObject.query);
+      tempQueryList.onchange = (ev) => {
+        setIsQueryMatching(() => ev.matches);
+      };
+    }
+  }, [queryObject.query]);
 
-  return isVisible;
+  return isQueryMatching;
 }
 
-interface mediaQueryProps {
+type RenderProps = (matches: boolean) => JSX.Element;
+type ChildrenType = JSX.Element | JSX.Element[] | string | RenderProps | null;
+
+interface MediaQueryPropsTemplate {
   orientation?: 'portrait' | 'landscape';
   minResolution?: number;
   maxResolution?: number;
@@ -41,44 +35,68 @@ interface mediaQueryProps {
   maxWidth?: number;
   minHeight?: number;
   maxHeight?: number;
-  children?: JSX.Element | null;
+  children: ChildrenType;
 }
 
-const MediaQuery: (props: mediaQueryProps) => JSX.Element | null = (props) => {
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  let size = useWindowSize();
+interface QueryNames {
+  [orientation: string]: string[];
+  minResolution: string[];
+  maxResolution: string[];
+  minWidth: string[];
+  maxWidth: string[];
+  minHeight: string[];
+  maxHeight: string[];
+}
+
+type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
+  Pick<T, Exclude<keyof T, Keys>>
+  & {
+  [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
+}[Keys];
+
+type MediaQueryProps = RequireAtLeastOne<MediaQueryPropsTemplate, 'orientation' | 'minResolution' | 'maxResolution' | 'minWidth' | 'maxWidth' | 'minHeight' | 'maxHeight'>;
+
+const MediaQuery: (props: MediaQueryProps) => JSX.Element | null = (props) => {
+  const [isQueryMatching, setIsQueryMatching] = useState(false);
+
+  const queriesPropNameAndUnit : QueryNames = {
+    orientation: ['orientation', ''],
+    minResolution: ['min-resolution', 'dppx'],
+    maxResolution: ['max-resolution', 'dppx'],
+    minWidth: ['min-width', 'px'],
+    maxWidth: ['max-width', 'px'],
+    minHeight: ['min-height', 'px'],
+    maxHeight: ['max-height', 'px'],
+  };
+
+  const getStringQuery = () : string | null=> {
+    let strings = Object.entries(props).map((property)=>{
+      if (property[0] !== 'children') {
+        const nameAndUnit: string[] = queriesPropNameAndUnit[property[0]];
+        return `(${nameAndUnit[0]}: ${property[1]}${nameAndUnit[1]})`;
+      }
+      return null;
+    });
+
+    strings = strings.filter(elem => { return elem !== null; });
+    return strings.reduce((a, b) => {
+      return a + ' and ' + b;
+    });
+  };
+
+  const queryString = getStringQuery();
+  const isMatched = useMediaQuery({query: queryString});
+  //debugger; // eslint-disable-line
 
   useEffect(() => {
-    let isShow = true;
-    if (props.orientation) {
-      isShow = isShow && window.matchMedia(`(orientation: ${props.orientation})`).matches;
-    }
-    if (props.minResolution) {
-      isShow = isShow && window.matchMedia(`(min-resolution: ${props.minResolution}dppx)`).matches;
-    }
-    if (props.maxResolution) {
-      isShow = isShow && window.matchMedia(`(max-resolution: ${props.maxResolution}dppx)`).matches;
-    }
-    if (props.minWidth) {
-      isShow = isShow && window.matchMedia(`(min-width: ${props.minWidth}px)`).matches;
-    }
-    if (props.maxWidth) {
-      isShow = isShow && window.matchMedia(`(max-width: ${props.maxWidth}px)`).matches;
-    }
-    if (props.minHeight) {
-      isShow = isShow && window.matchMedia(`(min-height: ${props.minHeight}px)`).matches;
-    }
-    if (props.maxHeight) {
-      isShow = isShow && window.matchMedia(`(max-height: ${props.maxHeight}px)`).matches;
-    }
-
-    setIsVisible(() => {
-      return isShow;
+    setIsQueryMatching(() => {
+      return isMatched;
     });
-  }, [size, props]);
+  }, [isMatched, props]);
 
-  const renderChildren = (): JSX.Element | undefined => {
-    if (props.children && isVisible) return props.children;
+  const renderChildren = (): ChildrenType | undefined => {
+    if (typeof(props.children) === 'function') return props.children(isQueryMatching);
+    if (props.children && isQueryMatching) return props.children;
   };
 
   return <>{renderChildren()}</>;
