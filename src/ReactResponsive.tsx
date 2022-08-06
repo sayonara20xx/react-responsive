@@ -86,7 +86,6 @@ const MediaQuery: (props: MediaQueryProps) => JSX.Element | null = (props) => {
 
   const queryString = getStringQuery();
   const isMatched = useMediaQuery({query: queryString});
-  //debugger; // eslint-disable-line
 
   useEffect(() => {
     setIsQueryMatching(() => {
@@ -94,9 +93,11 @@ const MediaQuery: (props: MediaQueryProps) => JSX.Element | null = (props) => {
     });
   }, [isMatched, props]);
 
-  const renderChildren = (): ChildrenType | undefined => {
+  const renderChildren = (): ChildrenType => {
     if (typeof(props.children) === 'function') return props.children(isQueryMatching);
     if (props.children && isQueryMatching) return props.children;
+
+    return null
   };
 
   return <>{renderChildren()}</>;
