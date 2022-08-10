@@ -1,7 +1,7 @@
 {
   "name": "@yuyushka/react-responsive",
   "type": "module",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "for educational purposes, do not use",
   "main": "dist/ReactResponsive.js",
   "module": "dist/main.modern.js",
