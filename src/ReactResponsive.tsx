@@ -10,11 +10,9 @@ function useMediaQuery(queryObject: UseMediaQueryProps) {
   });
 
   useEffect(() => {
-    if (queryObject.query !== null) {
       const tempQueryList = window.matchMedia(queryObject.query);
       tempQueryList.onchange = (ev) => {
         setIsQueryMatching(() => ev.matches);
-      };
     }
   }, [queryObject.query]);
 
