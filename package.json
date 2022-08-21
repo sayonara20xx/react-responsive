@@ -1,0 +1,41 @@
+{
+  "name": "@yuyushka/react-responsive",
+  "type": "module",
+  "version": "1.0.5",
+  "description": "for educational purposes, do not use",
+  "main": "dist/ReactResponsive.js",
+  "module": "dist/main.modern.js",
+  "types": "dist/src/ReactResponsive.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf dist && tsc && rollup -c rollup.config.js"
+  },
+  "keywords": [
+    "restricted"
+  ],
+  "author": "yuyuska",
+  "license": "ISC",
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.4",
+    "@open-wc/building-rollup": "^2.0.1",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "@types/react": "^18.0.15",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "eslint": "^8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-node": "^0.3.6",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unicorn": "^43.0.2",
+    "microbundle": "^0.15.0"
+  }
+}
